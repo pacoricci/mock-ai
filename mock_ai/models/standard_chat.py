@@ -8,7 +8,7 @@ from mock_ai.schemas.completion_out import (
     ChatCompletionResponse,
     Usage,
 )
-from mock_ai.schemas.model_out import ModelOut
+from mock_ai.schemas.model_out import ModelInfo
 
 from ..utils import (
     generate_chat_completion_chunk,
@@ -84,5 +84,5 @@ class StandardChatModel(ChatModel):
                 completion_tokens=MAX_COMPLITION_LENGTH // 4,
             )
 
-    def _get_model_info(self) -> ModelOut:
-        return ModelOut(id="", created=0, owned_by="")
+    def _get_model_info(self) -> ModelInfo:
+        return ModelInfo(id="", created=0, owned_by="")

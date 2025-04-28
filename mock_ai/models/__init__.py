@@ -1,7 +1,7 @@
 import abc
 from typing import final
 
-from mock_ai.schemas.model_out import ModelOut
+from mock_ai.schemas.model_out import ModelInfo
 
 
 class HasKey(abc.ABC):
@@ -16,13 +16,13 @@ class HasKey(abc.ABC):
 
 class BaseModel(HasKey):
     @abc.abstractmethod
-    def _get_model_info(self) -> ModelOut:
+    def _get_model_info(self) -> ModelInfo:
         """Fetch raw model metadata."""
         ...
 
     @final
     @property
-    def model_info(self) -> ModelOut:
+    def model_info(self) -> ModelInfo:
         """Return model info with assigned model key."""
         model_info = self._get_model_info()
         model_info.id = self.key

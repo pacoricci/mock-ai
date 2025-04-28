@@ -4,7 +4,7 @@ from mock_ai.schemas.embedding_out import (
     Usage,
 )
 from mock_ai.schemas.embedding_request import EmbeddingRequest
-from mock_ai.schemas.model_out import ModelOut
+from mock_ai.schemas.model_out import ModelInfo
 from mock_ai.utils import normal_from_string
 
 from .embedding_model import EmbeddingModel
@@ -37,6 +37,6 @@ class StandardEmbeddingModel(EmbeddingModel):
             usage=Usage(prompt_tokens=1, completion_tokens=0),
         )
 
-    def _get_model_info(self) -> ModelOut:
+    def _get_model_info(self) -> ModelInfo:
         """Fetch raw model metadata."""
-        return ModelOut(id="", created=0, owned_by="")
+        return ModelInfo(id="", created=0, owned_by="")

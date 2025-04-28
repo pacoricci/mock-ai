@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from typing import Generic, TypeVar
 
-from mock_ai.schemas.model_out import ModelListOut
+from mock_ai.schemas.model_out import ModelsResponse
 
 from . import BaseModel, HasKey
 
@@ -30,7 +30,7 @@ class Registry(Generic[T]):
 
 
 class ModelRegistry(Registry[BaseModel]):
-    def get_models(self) -> ModelListOut:
-        return ModelListOut(
+    def get_models(self) -> ModelsResponse:
+        return ModelsResponse(
             data=[model.model_info for model in self._store.values()]
         )

@@ -3,13 +3,13 @@ from typing import Literal
 from pydantic import BaseModel
 
 
-class ModelOut(BaseModel):
+class ModelInfo(BaseModel):
     id: str
     object: Literal["model"] = "model"
     created: int
     owned_by: str
 
 
-class ModelListOut(BaseModel):
+class ModelsResponse(BaseModel):
     object: Literal["list"] = "list"
-    data: list[ModelOut]
+    data: list[ModelInfo]

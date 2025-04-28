@@ -9,19 +9,19 @@ from mock_ai.schemas.chat_completion_request import (
 )
 from mock_ai.schemas.embedding_out import EmbeddingResponse
 from mock_ai.schemas.embedding_request import EmbeddingRequest
-from mock_ai.schemas.model_out import ModelListOut, ModelOut
+from mock_ai.schemas.model_out import ModelInfo, ModelsResponse
 from mock_ai.utils import SSEEncoder
 
 app = FastAPI()
 
 
-@app.get("/v1/models/", response_model=ModelListOut)
-async def models() -> ModelListOut:
+@app.get("/v1/models/", response_model=ModelsResponse)
+async def models() -> ModelsResponse:
     return STANDARD_REGISTRY.get_models()
 
 
 @app.get("/v1/models/{model_name}")
-async def model(model_name: str) -> ModelOut:
+async def model(model_name: str) -> ModelInfo:
     model = STANDARD_REGISTRY.get(model_name)
     if model is None:
         raise HTTPException(
