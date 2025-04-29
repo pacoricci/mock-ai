@@ -1,9 +1,9 @@
 from collections.abc import Iterator
 from typing import Generic, TypeVar
 
-from mock_ai.schemas.model_out import ModelsResponse
+from mock_ai.schemas.models_response import ModelsResponse
 
-from . import BaseModel, HasKey
+from .base_ai_model import BaseAIModel, HasKey
 
 T = TypeVar("T", bound="HasKey")
 
@@ -29,7 +29,7 @@ class Registry(Generic[T]):
         return len(self._store)
 
 
-class ModelRegistry(Registry[BaseModel]):
+class ModelRegistry(Registry[BaseAIModel]):
     def get_models(self) -> ModelsResponse:
         return ModelsResponse(
             data=[model.model_info for model in self._store.values()]

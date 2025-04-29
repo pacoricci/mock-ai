@@ -1,16 +1,22 @@
-from fastapi import FastAPI, HTTPException, status
+import io
+
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 
-from mock_ai.models.chat_model import ChatModel
-from mock_ai.models.embedding_model import EmbeddingModel
+from mock_ai.models import ChatModel, EmbeddingModel, ImageModel
 from mock_ai.models.standard_registry import STANDARD_REGISTRY
-from mock_ai.schemas.chat_completion_request import (
-    ChatCompletionRequest,
-)
-from mock_ai.schemas.embedding_out import EmbeddingResponse
+from mock_ai.schemas.chat_completion_request import ChatCompletionRequest
 from mock_ai.schemas.embedding_request import EmbeddingRequest
-from mock_ai.schemas.model_out import ModelInfo, ModelsResponse
-from mock_ai.utils import SSEEncoder
+from mock_ai.schemas.embedding_response import EmbeddingResponse
+from mock_ai.schemas.image_request import ImageRequest
+from mock_ai.schemas.image_respnonse import ImageResponse
+from mock_ai.schemas.models_response import ModelInfo, ModelsResponse
+from mock_ai.utils import (
+    SSEEncoder,
+    generate_noise_image_from_string,
+    get_data_from_image_id,
+    parse_dimensions,
+)
 
 app = FastAPI()
 
@@ -74,3 +80,47 @@ async def embeddings(
         )
     model_response = model.get_response(data)
     return model_response
+
+
+@app.post("/v1/images/generations")
+async def images_generations(
+    data: ImageRequest, request: Request
+) -> ImageResponse:
+    model = STANDARD_REGISTRY.get(data.model)
+    if model is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Model not found"
+        )
+    if not isinstance(model, ImageModel):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Model `{data.model}` is not an image generation model",
+        )
+    if data.response_format == "url":
+        model_response = model.get_response(data, "url")
+        for image in model_response.data:
+            image.url = str(request.base_url) + image.url
+    elif data.response_format == "b64_json":
+        model_response = model.get_response(data, "b64_json")
+    return model_response
+
+
+@app.get("/private/images/{id_}.{ext}")
+async def private(id_: str, ext: str):
+    data = get_data_from_image_id(id_)
+    if data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
+        )
+    try:
+        size, format_ = data.split("|")
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
+        )
+    width, height = parse_dimensions(size)
+    img = generate_noise_image_from_string(id_, width, height)
+    buffer = io.BytesIO()
+    img.save(buffer, format=format_)
+    img_data = buffer.getvalue()
+    return Response(content=img_data, media_type="image/png")

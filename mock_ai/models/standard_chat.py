@@ -3,12 +3,12 @@ from collections.abc import Generator, Iterator
 from typing import Any, Literal, overload
 
 from mock_ai.schemas.chat_completion_request import ModelSettings
-from mock_ai.schemas.completion_out import (
+from mock_ai.schemas.completion_response import (
     ChatCompletionDelta,
     ChatCompletionResponse,
     Usage,
 )
-from mock_ai.schemas.model_out import ModelInfo
+from mock_ai.schemas.models_response import ModelInfo
 
 from ..utils import (
     generate_chat_completion_chunk,

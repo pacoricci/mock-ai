@@ -1,10 +1,10 @@
-from mock_ai.schemas.embedding_out import (
+from mock_ai.schemas.embedding_request import EmbeddingRequest
+from mock_ai.schemas.embedding_response import (
     EmbeddingObject,
     EmbeddingResponse,
     Usage,
 )
-from mock_ai.schemas.embedding_request import EmbeddingRequest
-from mock_ai.schemas.model_out import ModelInfo
+from mock_ai.schemas.models_response import ModelInfo
 from mock_ai.utils import normal_from_string
 
 from .embedding_model import EmbeddingModel
