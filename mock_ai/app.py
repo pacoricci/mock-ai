@@ -9,7 +9,7 @@ from mock_ai.schemas.chat_completion_request import ChatCompletionRequest
 from mock_ai.schemas.embedding_request import EmbeddingRequest
 from mock_ai.schemas.embedding_response import EmbeddingResponse
 from mock_ai.schemas.image_request import ImageRequest
-from mock_ai.schemas.image_respnonse import ImageResponse
+from mock_ai.schemas.image_respnonse import ImageB64, ImageResponse, ImageUrl
 from mock_ai.schemas.models_response import ModelInfo, ModelsResponse
 from mock_ai.utils import (
     SSEEncoder,
@@ -85,7 +85,7 @@ async def embeddings(
 @app.post("/v1/images/generations")
 async def images_generations(
     data: ImageRequest, request: Request
-) -> ImageResponse:
+) -> ImageResponse[ImageUrl] | ImageResponse[ImageB64]:
     model = STANDARD_REGISTRY.get(data.model)
     if model is None:
         raise HTTPException(
@@ -97,12 +97,13 @@ async def images_generations(
             detail=f"Model `{data.model}` is not an image generation model",
         )
     if data.response_format == "url":
-        model_response = model.get_response(data, "url")
-        for image in model_response.data:
+        model_response_urls = model.get_response(data, "url")
+        for image in model_response_urls.data:
             image.url = str(request.base_url) + image.url
+        return model_response_urls
     elif data.response_format == "b64_json":
-        model_response = model.get_response(data, "b64_json")
-    return model_response
+        model_response_b64 = model.get_response(data, "b64_json")
+        return model_response_b64
 
 
 @app.get("/private/images/{id_}.{ext}")

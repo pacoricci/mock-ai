@@ -19,9 +19,9 @@ from .chat_model import ChatModel
 
 
 class StandardChatModel(ChatModel):
-    def __init__(self, key: str, message_lenght: int = 10_000):
+    def __init__(self, key: str, max_message_lenght: int = 10_000):
         self._key = key
-        self.message_lenght = message_lenght
+        self.message_lenght = max_message_lenght
 
     @property
     def key(self) -> str:
@@ -46,9 +46,14 @@ class StandardChatModel(ChatModel):
         model_settings: ModelSettings,
         stream: bool,
     ) -> ChatCompletionResponse | Iterator[ChatCompletionDelta]:
-        MAX_COMPLITION_LENGTH = (
-            4 * model_settings.max_completion_tokens
+        MAX_COMPLITION_TOKENS = (
+            model_settings.max_completion_tokens
             if model_settings.max_completion_tokens
+            else model_settings.max_tokens
+        )
+        MAX_COMPLITION_LENGTH = (
+            4 * MAX_COMPLITION_TOKENS
+            if MAX_COMPLITION_TOKENS
             else self.message_lenght
         )
 
@@ -76,7 +81,7 @@ class StandardChatModel(ChatModel):
 
             return stream_response()
         else:
-            random_string = generate_random_string(self.message_lenght)
+            random_string = generate_random_string(MAX_COMPLITION_LENGTH)
             return generate_chat_completions_object(
                 model=self.key,
                 content=random_string,

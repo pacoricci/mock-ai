@@ -1,7 +1,6 @@
 from typing import Generic, TypeVar
 
 from pydantic import BaseModel
-from pydantic.generics import GenericModel
 
 from .usage import Usage
 
@@ -17,7 +16,7 @@ class ImageB64(BaseModel):
 T = TypeVar("T", ImageUrl, ImageB64)
 
 
-class ImageResponse(GenericModel, Generic[T]):
+class ImageResponse(BaseModel, Generic[T]):
     created: int
     data: list[T]
     usage: Usage | None = None

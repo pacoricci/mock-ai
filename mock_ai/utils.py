@@ -36,7 +36,7 @@ class SSEEncoder:
 
 
 def generate_random_string(length: int) -> str:
-    allowed_chars = string.ascii_letters + string.digits
+    allowed_chars = string.ascii_letters + string.digits + " " * 10
     return "".join(random.choices(allowed_chars, k=length))
 
 
