@@ -3,7 +3,7 @@ import io
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 
-from mock_ai.models import ChatModel, EmbeddingModel, ImageModel
+from mock_ai.models import ChatModel, EmbeddingModel, ImageModel, SpeechModel
 from mock_ai.models.standard_registry import STANDARD_REGISTRY
 from mock_ai.schemas.chat_completion_request import ChatCompletionRequest
 from mock_ai.schemas.embedding_request import EmbeddingRequest
@@ -11,6 +11,7 @@ from mock_ai.schemas.embedding_response import EmbeddingResponse
 from mock_ai.schemas.image_request import ImageRequest
 from mock_ai.schemas.image_respnonse import ImageB64, ImageResponse, ImageUrl
 from mock_ai.schemas.models_response import ModelInfo, ModelsResponse
+from mock_ai.schemas.speech_request import SpeechRequest
 from mock_ai.utils import (
     SSEEncoder,
     generate_noise_image_from_string,
@@ -107,7 +108,7 @@ async def images_generations(
 
 
 @app.get("/private/images/{id_}.{ext}")
-async def private(id_: str, ext: str):
+async def private(id_: str, ext: str) -> Response:
     data = get_data_from_image_id(id_)
     if data is None:
         raise HTTPException(
@@ -125,3 +126,26 @@ async def private(id_: str, ext: str):
     img.save(buffer, format=format_)
     img_data = buffer.getvalue()
     return Response(content=img_data, media_type="image/png")
+
+
+@app.post("/v1/audio/speech")
+async def speech_generation(data: SpeechRequest) -> Response:
+    model = STANDARD_REGISTRY.get(data.model)
+    if model is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Model not found"
+        )
+    if not isinstance(model, SpeechModel):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Model `{data.model}` is not a text to speech model",
+        )
+    audio_data = model.get_response(data)
+    return Response(
+        content=audio_data,
+        media_type=f"audio/{data.response_format}",
+        headers={
+            "Content-Length": str(len(audio_data)),
+            "Accept-Ranges": "bytes",
+        },
+    )

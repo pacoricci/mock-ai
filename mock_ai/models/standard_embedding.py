@@ -34,7 +34,9 @@ class StandardEmbeddingModel(EmbeddingModel):
         return EmbeddingResponse(
             data=embedding_object_list,
             model="standard-emebedding",
-            usage=Usage(prompt_tokens=1, completion_tokens=0),
+            usage=Usage(
+                prompt_tokens=len(str(data.input)) // 4, completion_tokens=0
+            ),
         )
 
     def _get_model_info(self) -> ModelInfo:

@@ -91,12 +91,16 @@ def generate_chat_completion_chunk(
     return result
 
 
+def random_gen_from_string(key: str) -> np.random.Generator:
+    h = hashlib.md5(key.encode("utf-8")).digest()
+    seed = int.from_bytes(h[:8], "big", signed=False)
+    return np.random.default_rng(seed)
+
+
 def normal_from_string(
     key: str, n: int, loc: float = 0.0, scale: float = 1.0
 ) -> np.ndarray:
-    h = hashlib.md5(key.encode("utf-8")).digest()
-    seed = int.from_bytes(h[:8], "big", signed=False)
-    rng = np.random.default_rng(seed)
+    rng = random_gen_from_string(key)
     v = rng.normal(loc=loc, scale=scale, size=n)
     normalized_v = v / np.linalg.norm(v)
     return normalized_v
@@ -109,9 +113,7 @@ def generate_noise_image_from_string(
     loc: float = 0.0,
     scale: float = 1.0,
 ) -> Image.Image:
-    h = hashlib.md5(key.encode("utf-8")).digest()
-    seed = int.from_bytes(h[:8], "big", signed=False)
-    rng = np.random.default_rng(seed)
+    rng = random_gen_from_string(key)
     noise = rng.normal(loc=loc, scale=scale, size=(height, width, 3))
 
     noise_min = noise.min()
