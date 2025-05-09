@@ -8,6 +8,12 @@ class ModelSettings(BaseModel):
     temperature: float | None = 1
     stream_options: dict | None = None
 
+    def needs_usage(self) -> bool:
+        return (
+            isinstance(self.stream_options, dict)
+            and "include_usage" in self.stream_options
+        )
+
 
 class ChatCompletionRequest(ModelSettings):
     model: str

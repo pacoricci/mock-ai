@@ -9,13 +9,11 @@ from .base_ai_model import BaseAIModel
 
 class ImageModel(BaseAIModel):
     @overload
-    @abc.abstractmethod
     def get_response(
         self, embedding_request: ImageRequest, response_format: Literal["url"]
     ) -> ImageResponse[ImageUrl]: ...
 
     @overload
-    @abc.abstractmethod
     def get_response(
         self,
         embedding_request: ImageRequest,

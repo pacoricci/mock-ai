@@ -4,8 +4,9 @@ from typing import Literal, overload
 
 from mock_ai.schemas import ModelSettings
 from mock_ai.schemas.completion_response import (
-    ChatCompletionDelta,
     ChatCompletionResponse,
+    DeltaChoice,
+    MessageChoice,
 )
 
 from .base_ai_model import BaseAIModel
@@ -15,21 +16,19 @@ class ChatModel(BaseAIModel):
     """Base interface for calling a language model."""
 
     @overload
-    @abc.abstractmethod
     def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[False],
-    ) -> ChatCompletionResponse:
+    ) -> ChatCompletionResponse[MessageChoice]:
         """Get the full chat completion response."""
 
     @overload
-    @abc.abstractmethod
     def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[True],
-    ) -> Iterator[ChatCompletionDelta]:
+    ) -> Iterator[ChatCompletionResponse[DeltaChoice]]:
         """Stream chat completion deltas."""
 
     @abc.abstractmethod
@@ -37,5 +36,5 @@ class ChatModel(BaseAIModel):
         self,
         model_settings: ModelSettings,
         stream: bool,
-    ) -> ChatCompletionResponse | Iterator[ChatCompletionDelta]:
+    ) -> ChatCompletionResponse | Iterator[ChatCompletionResponse[DeltaChoice]]:
         """Fetch chat completions, optionally streaming."""

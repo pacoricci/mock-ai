@@ -4,7 +4,6 @@ import io
 import random
 import re
 import string
-import time
 import uuid
 from collections.abc import Iterator
 
@@ -12,19 +11,11 @@ import numpy as np
 from PIL import Image
 from pydantic import BaseModel
 
-from mock_ai.schemas.completion_response import (
-    ChatCompletionDelta,
-    ChatCompletionResponse,
-    Delta,
-    DeltaChoice,
-    Message,
-    MessageChoice,
-    Usage,
-)
-
 
 class SSEEncoder:
-    def __init__(self, iterator: Iterator[BaseModel]) -> None:
+    def __init__(
+        self, iterator: Iterator[BaseModel] | Iterator[dict] | Iterator[str]
+    ) -> None:
         self.iterator = iterator
 
     def __iter__(self):
@@ -32,63 +23,18 @@ class SSEEncoder:
 
     def __next__(self) -> bytes:
         item = next(self.iterator)
-        return f"data: {item.model_dump_json()}\n\n".encode()
+        if isinstance(item, str):
+            return f"data: {item}\n\n".encode()
+        if isinstance(item, dict):
+            return f"data: {item}\n\n".encode()
+        if isinstance(item, BaseModel):
+            return f"data: {item.model_dump_json()}\n\n".encode()
+        raise TypeError("Unsupported item type")
 
 
 def generate_random_string(length: int) -> str:
     allowed_chars = string.ascii_letters + string.digits + " " * 10
     return "".join(random.choices(allowed_chars, k=length))
-
-
-def generate_chat_completions_object(
-    model: str,
-    content: str,
-    prompt_tokens: int,
-    completion_tokens: int,
-    finsih_reason: str | None = "stop",
-) -> ChatCompletionResponse:
-    return ChatCompletionResponse(
-        id="chatcmpl-123",
-        object="chat.completion",
-        created=int(time.time()),
-        model=model,
-        system_fingerprint="fp_44709d6fcb",
-        choices=[
-            MessageChoice(
-                index=1,
-                message=Message(role="assistant", content=content),
-                finish_reason=finsih_reason,
-            )
-        ],
-        usage=Usage(
-            prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
-        ),
-    )
-
-
-def generate_chat_completion_chunk(
-    model: str,
-    chunk_output_message: str,
-    usage: Usage | None = None,
-    finish_reason: str | None = None,
-) -> ChatCompletionDelta:
-    result = ChatCompletionDelta(
-        id="chatcmpl-123",
-        created=int(time.time()),
-        model=model,
-        system_fingerprint="fp_44709d6fcb",
-        choices=[
-            DeltaChoice(
-                index=1,
-                delta=Delta(content=chunk_output_message),
-                finish_reason=finish_reason,
-            )
-        ],
-    )
-    if usage:
-        result.usage = usage
-    return result
 
 
 def random_gen_from_string(key: str) -> np.random.Generator:
@@ -182,3 +128,52 @@ def get_data_from_image_id(img_id: str) -> str | None:
         return base64.urlsafe_b64decode(b64_part + padding).decode("utf-8")
     except (ValueError, UnicodeDecodeError):
         return None
+
+
+class Token:
+    def __init__(self, n: int = 1024):
+        self.n = n
+
+    def __getitem__(self, key: int) -> str:
+        if key > self.n - 1 or key < 0:
+            raise IndexError("Index out of range")
+        suffix = "\n" if key % 100 == 0 else (" " if key % 10 == 0 else "")
+        return f"[{key}]{suffix}"
+
+    def __len__(self) -> int:
+        return self.n
+
+
+class TokenBatchFactory:
+    def __init__(self, batch_size: int = 1, n: int = 1024, stop_token: int = 0):
+        self.token = Token(n)
+        self.batch_size = batch_size
+        self.n = n
+        self.stop_token = stop_token
+        self.end = False
+
+    def __iter__(self) -> "TokenBatchFactory":
+        return self
+
+    def __next__(self) -> str:
+        if self.end:
+            raise StopIteration
+        indexes = np.random.randint(0, self.n, self.batch_size).tolist()
+        tokens = []
+        for index in indexes:
+            if index == self.stop_token:
+                break
+            tokens.append(self.token[index])
+        return "".join(tokens)
+
+    def __len__(self) -> int:
+        return self.batch_size
+
+    def __mul__(self, other: int) -> "TokenBatchFactory":
+        if isinstance(other, int):
+            self.batch_size *= other
+            return self
+        raise TypeError("Multiplication is only supported with integers.")
+
+    def __rmul__(self, other: int) -> "TokenBatchFactory":
+        return self.__mul__(other)

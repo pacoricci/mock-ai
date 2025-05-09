@@ -4,24 +4,35 @@ from typing import Any, Literal, overload
 
 from mock_ai.schemas.chat_completion_request import ModelSettings
 from mock_ai.schemas.completion_response import (
-    ChatCompletionDelta,
     ChatCompletionResponse,
+    Delta,
+    DeltaChoice,
+    Message,
+    MessageChoice,
     Usage,
 )
 from mock_ai.schemas.models_response import ModelInfo
+from mock_ai.utils import TokenBatchFactory
 
-from ..utils import (
-    generate_chat_completion_chunk,
-    generate_chat_completions_object,
-    generate_random_string,
-)
 from .chat_model import ChatModel
 
 
 class StandardChatModel(ChatModel):
-    def __init__(self, key: str, max_message_lenght: int = 10_000):
+    COMPLETIONS_TOKENS_LIMIT = 1000
+    BATCH_PER_SECOND = 10
+    TOKEN_PER_BATCH = 10
+
+    def __init__(
+        self,
+        key: str,
+        completions_tokens_limit: int = COMPLETIONS_TOKENS_LIMIT,
+        batch_per_second: int = BATCH_PER_SECOND,
+        token_per_batch: int = TOKEN_PER_BATCH,
+    ):
         self._key = key
-        self.message_lenght = max_message_lenght
+        self.batch_per_second = batch_per_second
+        self.completions_tokens_limit = completions_tokens_limit
+        self.token_per_batch = token_per_batch
 
     @property
     def key(self) -> str:
@@ -32,61 +43,71 @@ class StandardChatModel(ChatModel):
         self,
         model_settings: ModelSettings,
         stream: Literal[False],
-    ) -> ChatCompletionResponse: ...
+    ) -> ChatCompletionResponse[MessageChoice]: ...
 
     @overload
     def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[True],
-    ) -> Iterator[ChatCompletionDelta]: ...
+    ) -> Iterator[ChatCompletionResponse[DeltaChoice]]: ...
 
     def get_response(
         self,
         model_settings: ModelSettings,
         stream: bool,
-    ) -> ChatCompletionResponse | Iterator[ChatCompletionDelta]:
-        MAX_COMPLITION_TOKENS = (
-            model_settings.max_completion_tokens
-            if model_settings.max_completion_tokens
-            else model_settings.max_tokens
-        )
-        MAX_COMPLITION_LENGTH = (
-            4 * MAX_COMPLITION_TOKENS
-            if MAX_COMPLITION_TOKENS
-            else self.message_lenght
-        )
+    ) -> ChatCompletionResponse | Iterator[ChatCompletionResponse[DeltaChoice]]:
+        MAX_COMPLITION_TOKENS = self.completions_tokens_limit
 
         if stream:
 
-            def stream_response() -> Generator[ChatCompletionDelta, Any, None]:
-                for _ in range(MAX_COMPLITION_LENGTH // 10):
-                    time.sleep(0.05)
-                    random_string = generate_random_string(10)
-                    yield generate_chat_completion_chunk(
-                        model=self.key, chunk_output_message=random_string
+            def stream_response() -> Generator[
+                ChatCompletionResponse[DeltaChoice], Any, None
+            ]:
+                tokens_bank = MAX_COMPLITION_TOKENS
+                while tokens_bank > 0:
+                    batch_size = min(self.TOKEN_PER_BATCH, tokens_bank)
+                    tokens_bank -= batch_size
+
+                    time.sleep(1 / self.batch_per_second)
+
+                    yield ChatCompletionResponse(
+                        model=self.key,
+                        choices=[
+                            DeltaChoice(
+                                delta=Delta(
+                                    content=next(TokenBatchFactory(batch_size))
+                                ),
+                            )
+                        ],
                     )
-                if (
-                    model_settings.stream_options
-                    and model_settings.stream_options.get("include_usage")
-                ):
-                    prompt_tokens = len(str(model_settings.messages))
-                    usage = Usage(
-                        prompt_tokens=prompt_tokens,
-                        completion_tokens=MAX_COMPLITION_LENGTH // 4,
-                    )
-                    yield generate_chat_completion_chunk(
-                        model=self.key, chunk_output_message="", usage=usage
+                if model_settings.needs_usage():
+                    prompt_tokens = len(str(model_settings.messages)) // 4
+                    yield ChatCompletionResponse(
+                        model=self.key,
+                        choices=[],
+                        usage=Usage(
+                            prompt_tokens=prompt_tokens,
+                            completion_tokens=4,
+                        ),
                     )
 
             return stream_response()
         else:
-            random_string = generate_random_string(MAX_COMPLITION_LENGTH)
-            return generate_chat_completions_object(
+            return ChatCompletionResponse(
                 model=self.key,
-                content=random_string,
-                prompt_tokens=len(str(model_settings.messages)) // 4,
-                completion_tokens=MAX_COMPLITION_LENGTH // 4,
+                choices=[
+                    MessageChoice(
+                        index=0,
+                        message=Message(
+                            role="assistant",
+                            content=next(
+                                TokenBatchFactory(MAX_COMPLITION_TOKENS)
+                            ),
+                        ),
+                    )
+                ],
+                usage=Usage(prompt_tokens=1, completion_tokens=1),
             )
 
     def _get_model_info(self) -> ModelInfo:
