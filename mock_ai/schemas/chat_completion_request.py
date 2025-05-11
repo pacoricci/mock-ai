@@ -14,6 +14,15 @@ class ModelSettings(BaseModel):
             and "include_usage" in self.stream_options
         )
 
+    @property
+    def tokens_upper_limit(self) -> int | float:
+        upper_limit = float("inf")
+        if self.max_tokens:
+            upper_limit = self.max_tokens
+        if self.max_completion_tokens:
+            upper_limit = min(upper_limit, self.max_completion_tokens)
+        return upper_limit
+
 
 class ChatCompletionRequest(ModelSettings):
     model: str

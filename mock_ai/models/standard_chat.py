@@ -57,7 +57,11 @@ class StandardChatModel(ChatModel):
         model_settings: ModelSettings,
         stream: bool,
     ) -> ChatCompletionResponse | Iterator[ChatCompletionResponse[DeltaChoice]]:
-        MAX_COMPLITION_TOKENS = self.completions_tokens_limit
+        MAX_COMPLITION_TOKENS = int(
+            min(
+                self.completions_tokens_limit, model_settings.tokens_upper_limit
+            )
+        )
 
         if stream:
 
