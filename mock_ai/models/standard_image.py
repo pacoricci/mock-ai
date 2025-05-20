@@ -33,10 +33,10 @@ class StandardImageModel(ImageModel):
         if response_format == "url":
             image_urls = []
             for _ in range(data.n):
-                image_id = gen_image_id(f"{data.size}|{data.ouput_format}")
+                image_id = gen_image_id(f"{data.size}|{data.output_format}")
                 image_urls.append(
                     ImageUrl(
-                        url=f"private/images/{image_id}.{data.ouput_format.lower()}"
+                        url=f"private/images/{image_id}.{data.output_format.lower()}"
                     )
                 )
             return ImageResponse(
@@ -50,7 +50,7 @@ class StandardImageModel(ImageModel):
                 img = generate_noise_image_from_string(
                     f"{data.prompt}{i}", width, height
                 )
-                b64 = img_to_b64(img, format=data.ouput_format)
+                b64 = img_to_b64(img, format=data.output_format)
                 b64_images.append(ImageB64(b64_json=b64))
             return ImageResponse(
                 created=0,

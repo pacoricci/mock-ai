@@ -8,5 +8,5 @@ class ImageRequest(BaseModel):
     model: str
     n: int = 1
     size: str = "1024x1024"
-    ouput_format: Literal["png", "jpeg"] = "png"
+    output_format: Literal["png", "jpeg"] = "png"
     response_format: Literal["url", "b64_json"] = "url"
