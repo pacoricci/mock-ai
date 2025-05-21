@@ -1,3 +1,4 @@
+from . import standard_chat
 from .chat_model import ChatModel
 from .embedding_model import EmbeddingModel
 from .image_model import ImageModel

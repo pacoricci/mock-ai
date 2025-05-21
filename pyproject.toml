@@ -83,6 +83,7 @@ ignore = [
     "F811", # "redefinition of the same function"
     "PL", # Pylint
     "RUF012", # Mutable Class Attributes
+    "F401", # Unused import
 ]
 
 #extend-select = []

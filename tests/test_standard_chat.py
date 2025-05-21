@@ -3,6 +3,7 @@ import sys
 import types
 
 if "numpy" not in sys.modules:
+
     def _dummy_randint(low=0, high=None, size=None, **kwargs):
         if isinstance(size, tuple):
             n = size[0]
@@ -59,14 +60,19 @@ def test_standard_chat_stream(monkeypatch):
         messages=[{"role": "user", "content": "hello"}],
         stream_options={"include_usage": True},
     )
-    monkeypatch.setattr("mock_ai.models.standard_chat.time.sleep", lambda *_: None)
+    monkeypatch.setattr(
+        "mock_ai.models.standard_chat.time.sleep", lambda *_: None
+    )
     chunks = list(model.get_response(settings, True))
 
     delta_contents = [c.choices[0].delta.content for c in chunks if c.choices]
     token_counts = [_count_tokens(c) for c in delta_contents]
 
     assert sum(token_counts) == 25
-    assert len(delta_contents) == (25 + model.TOKEN_PER_BATCH - 1) // model.TOKEN_PER_BATCH
+    assert (
+        len(delta_contents)
+        == (25 + model.TOKEN_PER_BATCH - 1) // model.TOKEN_PER_BATCH
+    )
 
     assert chunks[-1].choices == []
     assert chunks[-1].usage is not None
