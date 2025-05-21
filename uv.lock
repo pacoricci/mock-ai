@@ -505,20 +505,20 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastapi", extras = ["standard"], marker = "extra == 'dependencies'", specifier = ">=0.115.12" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0" },
-    { name = "numpy", marker = "extra == 'dependencies'", specifier = ">=2.2.5" },
-    { name = "pillow", marker = "extra == 'dependencies'", specifier = ">=11.2.1" },
-    { name = "pre-commit-uv", marker = "extra == 'dev'", specifier = ">=4.1.4" },
-    { name = "pydantic", extras = ["mypy"], marker = "extra == 'dependencies'", specifier = ">=2.11.3" },
-    { name = "pydantic-settings", marker = "extra == 'dependencies'", specifier = ">=2.9.1" },
-    { name = "pydub", marker = "extra == 'dependencies'", specifier = ">=0.25.1" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3.5" },
-    { name = "python-semantic-release", marker = "extra == 'dev'", specifier = ">=9.21.0" },
-    { name = "rich", marker = "extra == 'dependencies'", specifier = ">=13.9.4" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.11.7" },
-    { name = "typer", marker = "extra == 'dependencies'", specifier = ">=0.15.2" },
-    { name = "uvicorn", extras = ["standard"], marker = "extra == 'dependencies'", specifier = ">=0.34.2" },
+    { name = "fastapi", extras = ["standard"], marker = "extra == 'dependencies'", specifier = "==0.115.12" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = "==1.15.0" },
+    { name = "numpy", marker = "extra == 'dependencies'", specifier = "==2.2.5" },
+    { name = "pillow", marker = "extra == 'dependencies'", specifier = "==11.2.1" },
+    { name = "pre-commit-uv", marker = "extra == 'dev'", specifier = "==4.1.4" },
+    { name = "pydantic", extras = ["mypy"], marker = "extra == 'dependencies'", specifier = "==2.11.3" },
+    { name = "pydantic-settings", marker = "extra == 'dependencies'", specifier = "==2.9.1" },
+    { name = "pydub", marker = "extra == 'dependencies'", specifier = "==0.25.1" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = "==8.3.5" },
+    { name = "python-semantic-release", marker = "extra == 'dev'", specifier = "==9.21.0" },
+    { name = "rich", marker = "extra == 'dependencies'", specifier = "==13.9.4" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = "==0.11.7" },
+    { name = "typer", marker = "extra == 'dependencies'", specifier = "==0.15.2" },
+    { name = "uvicorn", extras = ["standard"], marker = "extra == 'dependencies'", specifier = "==0.34.2" },
 ]
 provides-extras = ["dev", "dependencies"]
 
