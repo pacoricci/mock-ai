@@ -6,6 +6,7 @@ class ModelSettings(BaseModel):
     max_completion_tokens: int | None = None
     max_tokens: int | None = None
     temperature: float | None = 1
+    response_format: dict | None = None
     stream_options: dict | None = None
 
     def needs_usage(self) -> bool:
