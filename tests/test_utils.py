@@ -3,6 +3,7 @@ import types
 
 # Stub external dependencies not installed in test env
 if "numpy" not in sys.modules:
+
     def _dummy_randint(*args, **kwargs):
         class Arr:
             def tolist(self):
@@ -57,7 +58,9 @@ def test_sse_encoder_models():
     values = [DummyModel(foo="bar"), DummyModel(foo="baz")]
     encoder = SSEEncoder(iter(values))
     results = [next(encoder) for _ in values]
-    expected = [f"data: {item.model_dump_json()}\n\n".encode() for item in values]
+    expected = [
+        f"data: {item.model_dump_json()}\n\n".encode() for item in values
+    ]
     assert results == expected
 
 
