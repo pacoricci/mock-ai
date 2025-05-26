@@ -1,6 +1,15 @@
+import json
 import re
 import sys
 import types
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.modules.pop("mock_ai", None)
+sys.modules.pop("mock_ai.models", None)
+sys.modules.pop("mock_ai.models.standard_chat", None)
+sys.modules.pop("mock_ai.schemas", None)
+sys.modules.pop("mock_ai.schemas.chat_completion_request", None)
 
 if "numpy" not in sys.modules:
 
@@ -75,4 +84,36 @@ def test_standard_chat_stream(monkeypatch):
     )
 
     assert chunks[-1].choices == []
+    assert chunks[-1].usage is not None
+
+
+def test_standard_chat_json_object():
+    model = StandardChatModel("test")
+    settings = ModelSettings(
+        messages=[{"role": "user", "content": "ciao"}],
+        response_format={"type": "json_object"},
+    )
+    resp = model.get_response(settings, False)
+    data = json.loads(resp.choices[0].message.content)
+    assert isinstance(data, dict)
+
+
+def test_standard_chat_json_schema_stream(monkeypatch):
+    model = StandardChatModel("test")
+    schema = {
+        "type": "object",
+        "properties": {"name": {"type": "string"}, "age": {"type": "integer"}},
+    }
+    settings = ModelSettings(
+        messages=[{"role": "user", "content": "hi"}],
+        response_format={"type": "json_schema", "json_schema": schema},
+        stream_options={"include_usage": True},
+    )
+    monkeypatch.setattr(
+        "mock_ai.models.standard_chat.time.sleep", lambda *_: None
+    )
+    chunks = list(model.get_response(settings, True))
+    content = "".join(c.choices[0].delta.content or "" for c in chunks if c.choices)
+    data = json.loads(content)
+    assert set(data.keys()) == {"name", "age"}
     assert chunks[-1].usage is not None
