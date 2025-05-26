@@ -45,8 +45,8 @@ if "PIL" not in sys.modules:
     image_mod.Image = object
     sys.modules["PIL.Image"] = image_mod
 
-from mock_ai.models.standard_chat import StandardChatModel
-from mock_ai.schemas.chat_completion_request import ModelSettings
+from mock_ai.models.standard_chat import StandardChatModel  # noqa: E402
+from mock_ai.schemas.chat_completion_request import ModelSettings  # noqa: E402
 
 
 def _count_tokens(text: str) -> int:
@@ -113,7 +113,9 @@ def test_standard_chat_json_schema_stream(monkeypatch):
         "mock_ai.models.standard_chat.time.sleep", lambda *_: None
     )
     chunks = list(model.get_response(settings, True))
-    content = "".join(c.choices[0].delta.content or "" for c in chunks if c.choices)
+    content = "".join(
+        c.choices[0].delta.content or "" for c in chunks if c.choices
+    )
     data = json.loads(content)
     assert set(data.keys()) == {"name", "age"}
     assert chunks[-1].usage is not None

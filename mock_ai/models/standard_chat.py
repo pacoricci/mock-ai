@@ -17,6 +17,8 @@ from mock_ai.schemas.completion_response import (
 from mock_ai.schemas.models_response import ModelInfo
 from mock_ai.utils import TokenBatchFactory
 
+from .chat_model import ChatModel
+
 
 def _random_string(length: int = 8) -> str:
     return "".join(random.choice(string.ascii_letters) for _ in range(length))
@@ -38,8 +40,6 @@ def _from_schema(schema: dict) -> Any:
     if type_ == "boolean":
         return random.choice([True, False])
     return _random_string()
-
-from .chat_model import ChatModel
 
 
 class StandardChatModel(ChatModel):
@@ -106,7 +106,9 @@ class StandardChatModel(ChatModel):
                         yield ChatCompletionResponse(
                             model=self.key,
                             choices=[
-                                DeltaChoice(delta=Delta(content=content[i : i + 10]))
+                                DeltaChoice(
+                                    delta=Delta(content=content[i : i + 10])
+                                )
                             ],
                         )
                     if model_settings.needs_usage():
