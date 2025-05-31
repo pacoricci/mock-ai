@@ -1,7 +1,7 @@
 from typing import Literal
 
 from mock_ai.schemas.image_request import ImageRequest
-from mock_ai.schemas.image_respnonse import (
+from mock_ai.schemas.image_response import (
     ImageB64,
     ImageResponse,
     ImageUrl,

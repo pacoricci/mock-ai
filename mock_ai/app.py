@@ -9,7 +9,7 @@ from mock_ai.schemas.chat_completion_request import ChatCompletionRequest
 from mock_ai.schemas.embedding_request import EmbeddingRequest
 from mock_ai.schemas.embedding_response import EmbeddingResponse
 from mock_ai.schemas.image_request import ImageRequest
-from mock_ai.schemas.image_respnonse import ImageB64, ImageResponse, ImageUrl
+from mock_ai.schemas.image_response import ImageB64, ImageResponse, ImageUrl
 from mock_ai.schemas.models_response import ModelInfo, ModelsResponse
 from mock_ai.schemas.speech_request import SpeechRequest
 from mock_ai.utils import (

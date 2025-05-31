@@ -2,7 +2,7 @@ import abc
 from typing import Literal, overload
 
 from mock_ai.schemas.image_request import ImageRequest
-from mock_ai.schemas.image_respnonse import ImageB64, ImageResponse, ImageUrl
+from mock_ai.schemas.image_response import ImageB64, ImageResponse, ImageUrl
 
 from .base_ai_model import BaseAIModel
 
