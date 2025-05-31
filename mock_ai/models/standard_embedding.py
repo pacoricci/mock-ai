@@ -22,7 +22,7 @@ class StandardEmbeddingModel(EmbeddingModel):
         return self._key
 
     def get_response(self, data: EmbeddingRequest) -> EmbeddingResponse:
-        m = data.dimentions if data.dimentions else self.dimensions
+        m = data.dimensions if data.dimensions else self.dimensions
         batch = data.input if isinstance(data.input, list) else [data.input]
         embedding_object_list = [
             EmbeddingObject(
@@ -33,7 +33,7 @@ class StandardEmbeddingModel(EmbeddingModel):
 
         return EmbeddingResponse(
             data=embedding_object_list,
-            model="standard-emebedding",
+            model="standard-embedding",
             usage=Usage(
                 prompt_tokens=len(str(data.input)) // 4, completion_tokens=0
             ),
