@@ -82,9 +82,10 @@ class StandardChatModel(ChatModel):
         model_settings: ModelSettings,
         stream: bool,
     ) -> ChatCompletionResponse | Iterator[ChatCompletionResponse[DeltaChoice]]:
-        MAX_COMPLITION_TOKENS = int(
+        max_completion_tokens = int(
             min(
-                self.completions_tokens_limit, model_settings.tokens_upper_limit
+                self.completions_tokens_limit,
+                model_settings.tokens_upper_limit,
             )
         )
 
@@ -144,9 +145,9 @@ class StandardChatModel(ChatModel):
             def stream_response() -> Generator[
                 ChatCompletionResponse[DeltaChoice], Any, None
             ]:
-                tokens_bank = MAX_COMPLITION_TOKENS
+                tokens_bank = max_completion_tokens
                 while tokens_bank > 0:
-                    batch_size = min(self.TOKEN_PER_BATCH, tokens_bank)
+                    batch_size = min(self.token_per_batch, tokens_bank)
                     tokens_bank -= batch_size
 
                     time.sleep(1 / self.batch_per_second)
@@ -182,7 +183,7 @@ class StandardChatModel(ChatModel):
                         message=Message(
                             role="assistant",
                             content=next(
-                                TokenBatchFactory(MAX_COMPLITION_TOKENS)
+                                TokenBatchFactory(max_completion_tokens)
                             ),
                         ),
                     )
