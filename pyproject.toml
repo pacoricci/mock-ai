@@ -1,0 +1,135 @@
+[project]
+name = "mock-ai"
+version = "0.1.0"
+description = "Mock AI service for testing purposes"
+authors = [
+    { name = "Paco Ricci", email = "paco.ricci@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "fastapi[standard]==0.115.12",
+    "numpy==2.2.5",
+    "pillow==11.2.1",
+    "pydantic-settings==2.9.1",
+    "pydantic[mypy]==2.11.3",
+    "pydub==0.25.1",
+    "rich==13.9.4",
+    "typer==0.15.2",
+    "uvicorn[standard]==0.34.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy==1.15.0",
+  "pre-commit-uv==4.1.4",
+  "pytest==8.3.5",
+  "pytest-cov==6.1.1",
+  "python-semantic-release==9.21.0",
+  "ruff==0.11.7",
+]
+
+
+
+
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+include = ["mock_ai*"]
+namespaces = true
+
+[project.scripts]
+mock-ai = "mock_ai.__main__:main"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 80
+respect-gitignore = true
+
+# extend-exclude = [
+#     "tests",
+# ]
+
+[tool.ruff.format]
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint]
+select = [
+    # "B",  # flake8-bugbear
+    "C",  # flake8-comprehensions
+    "C9",  # mccabe
+    # "D",  # flake8-docstrings
+    "E",  # pycodestyle errors (default)
+    "F",  # pyflakes (default)
+    "I",  # isort
+    "PD", # pandas-vet
+    "PIE", # pie
+    "PTH", # pathlib
+    "Q",  # flake8-quotes
+    # "RET", # return
+    "RUF", # Enable all ruff-specific checks
+    # "SIM", # simplify
+    "S307", # eval
+    # "T20",  # (disallow print statements) keep debugging statements out of the codebase
+    "W",  # pycodestyle warnings
+    "ASYNC", # async
+    "UP", # pyupgrade
+    "T", # flake8-debugger
+]
+
+ignore = [
+    "E501",  # Line too long, handled by ruff formatter
+    "D107", # "Missing docstring in __init__",
+    "F811", # "redefinition of the same function"
+    "PL", # Pylint
+    "RUF012", # Mutable Class Attributes
+    "F401", # Unused import
+    "E402" # Module level import not at top of fil
+]
+
+#extend-select = []
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402", "F401"]
+"tests/*.py" = ["ASYNC"] # Disable ASYNC check for tests
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+
+[tool.mypy]
+pretty = true
+# strict = true
+no_implicit_optional = true
+plugins = "pydantic.mypy"
+python_version = "3.12"
+
+
+ignore_missing_imports = true
+[tool.pytest.ini_options]
+
+testpaths = [
+    "tests",
+]
+addopts = "-rA --color=yes --tb=short --maxfail=5"
+
+[tool.semantic_release]
+# for default values check:
+# https://github.com/python-semantic-release/python-semantic-release/blob/v7.32.2/semantic_release/defaults.cfg
+
+version_source = "tag_only"
+branch = "main"
+
+# configure types which should trigger minor and patch version bumps respectively
+# (note that they must be a subset of the configured allowed types):
+parser_angular_allowed_types = "build,chore,ci,docs,feat,fix,perf,style,refactor,test"
+parser_angular_minor_types = "feat"
+parser_angular_patch_types = "fix,perf"
