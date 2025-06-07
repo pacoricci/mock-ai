@@ -1,7 +1,8 @@
 import io
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from mock_ai.models import ChatModel, EmbeddingModel, ImageModel, SpeechModel
 from mock_ai.models.standard_registry import STANDARD_REGISTRY
@@ -12,6 +13,7 @@ from mock_ai.schemas.image_request import ImageRequest
 from mock_ai.schemas.image_response import ImageB64, ImageResponse, ImageUrl
 from mock_ai.schemas.models_response import ModelInfo, ModelsResponse
 from mock_ai.schemas.speech_request import SpeechRequest
+from mock_ai.settings import auth_settings
 from mock_ai.utils import (
     SSEEncoder,
     generate_noise_image_from_string,
@@ -19,7 +21,20 @@ from mock_ai.utils import (
     parse_dimensions,
 )
 
-app = FastAPI()
+security = HTTPBearer(auto_error=False)
+
+
+def verify_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> None:
+    if (
+        not credentials
+        or credentials.credentials not in auth_settings.bearer_tokens
+    ):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+app = FastAPI(dependencies=[Depends(verify_token)])
 
 
 @app.get("/v1/models/", response_model=ModelsResponse)

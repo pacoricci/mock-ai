@@ -39,3 +39,18 @@ Once running, the service exposes endpoints under `/v1` that mirror typical AI A
 
 Each endpoint returns deterministic content suitable for automated tests or demos without an actual model backend.
 
+## Authentication
+
+Set allowed bearer tokens with the `AUTH_BEARER_TOKENS` environment variable. Tokens
+can be supplied as a comma-separated list or by repeating the variable. Every
+request must include a matching `Authorization: Bearer <token>` header.
+
+Example:
+
+```bash
+export AUTH_BEARER_TOKENS=token1,token2
+# or
+export AUTH_BEARER_TOKENS=token1
+export AUTH_BEARER_TOKENS=token2
+```
+
