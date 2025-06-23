@@ -1,6 +1,7 @@
 import io
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -13,7 +14,7 @@ from mock_ai.schemas.image_request import ImageRequest
 from mock_ai.schemas.image_response import ImageB64, ImageResponse, ImageUrl
 from mock_ai.schemas.models_response import ModelInfo, ModelsResponse
 from mock_ai.schemas.speech_request import SpeechRequest
-from mock_ai.settings import auth_settings
+from mock_ai.settings import auth_settings, cors_settings
 from mock_ai.utils import (
     SSEEncoder,
     generate_noise_image_from_string,
@@ -35,6 +36,14 @@ def verify_token(
 
 
 app = FastAPI(dependencies=[Depends(verify_token)])
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_settings.allow_origins,
+    allow_credentials=cors_settings.allow_credentials,
+    allow_methods=cors_settings.allow_methods,
+    allow_headers=cors_settings.allow_headers,
+)
 
 
 @app.get("/v1/models/", response_model=ModelsResponse)
