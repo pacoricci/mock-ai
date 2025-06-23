@@ -43,3 +43,30 @@ class AuthSettings(BaseSettings):
 
 
 auth_settings = AuthSettings()
+
+
+class CorsSettings(BaseSettings):
+    """CORS configuration."""
+
+    model_config = SettingsConfigDict(
+        env_prefix="CORS_",
+        env_file=".env",
+        extra="allow",
+    )
+
+    allow_origins: Annotated[list[str], NoDecode] = ["*"]
+    allow_credentials: bool = True
+    allow_methods: Annotated[list[str], NoDecode] = ["*"]
+    allow_headers: Annotated[list[str], NoDecode] = ["*"]
+
+    @field_validator(
+        "allow_origins", "allow_methods", "allow_headers", mode="before"
+    )
+    @classmethod
+    def parse_csv(cls, v: Any) -> list[str]:
+        if isinstance(v, str):
+            return [item.strip() for item in v.split(",") if item.strip()]
+        return v
+
+
+cors_settings = CorsSettings()

@@ -54,3 +54,19 @@ export AUTH_BEARER_TOKENS=token1
 export AUTH_BEARER_TOKENS=token2
 ```
 
+## CORS configuration
+
+Cross-Origin Resource Sharing (CORS) can be configured via environment variables.
+By default all origins, methods and headers are allowed. The main variables are:
+
+- `CORS_ALLOW_ORIGINS` – comma separated list of allowed origins (defaults to `*`)
+- `CORS_ALLOW_CREDENTIALS` – whether to allow credentials (defaults to `true`)
+- `CORS_ALLOW_METHODS` – comma separated list of allowed HTTP methods (defaults to `*`)
+- `CORS_ALLOW_HEADERS` – comma separated list of allowed request headers (defaults to `*`)
+
+For example to only allow requests from `http://localhost:3000`:
+
+```bash
+export CORS_ALLOW_ORIGINS=http://localhost:3000
+```
+
