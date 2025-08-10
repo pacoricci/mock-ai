@@ -18,3 +18,16 @@ def test_cors_headers(monkeypatch):
         },
     )
     assert response.headers.get("Access-Control-Allow-Origin") == "*"
+
+
+def test_cors_headers_no_auth(monkeypatch):
+    # ensure token is accepted
+    monkeypatch.setattr(auth_settings, "bearer_tokens", None)
+    client = TestClient(app)
+    response = client.get(
+        "/v1/models/",
+        headers={
+            "Origin": "http://example.com",
+        },
+    )
+    assert response.headers.get("Access-Control-Allow-Origin") == "*"

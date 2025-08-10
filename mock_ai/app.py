@@ -28,22 +28,32 @@ security = HTTPBearer(auto_error=False)
 def verify_token(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> None:
-    if (
+    if auth_settings.bearer_tokens and (
         not credentials
         or credentials.credentials not in auth_settings.bearer_tokens
     ):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
 
-app = FastAPI(dependencies=[Depends(verify_token)])
+def create_app() -> FastAPI:
+    """Create the FastAPI app."""
+    dependencies = (
+        [Depends(verify_token)] if auth_settings.bearer_tokens else []
+    )
+    app = FastAPI(dependencies=dependencies)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=cors_settings.allow_origins,
-    allow_credentials=cors_settings.allow_credentials,
-    allow_methods=cors_settings.allow_methods,
-    allow_headers=cors_settings.allow_headers,
-)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_settings.allow_origins,
+        allow_credentials=cors_settings.allow_credentials,
+        allow_methods=cors_settings.allow_methods,
+        allow_headers=cors_settings.allow_headers,
+    )
+
+    return app
+
+
+app = create_app()
 
 
 @app.get("/v1/models/", response_model=ModelsResponse)

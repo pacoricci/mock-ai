@@ -32,11 +32,13 @@ class AuthSettings(BaseSettings):
         env_prefix="AUTH_", env_file=".env", extra="allow"
     )
 
-    bearer_tokens: Annotated[list[str], NoDecode]
+    bearer_tokens: Annotated[list[str], NoDecode] | None = None
 
     @field_validator("bearer_tokens", mode="before")
     @classmethod
-    def parse_comma_separated(cls, v: Any) -> list[str]:
+    def parse_comma_separated(cls, v: Any) -> list[str] | None:
+        if v is None:
+            return None
         if isinstance(v, str):
             return [item.strip() for item in v.split(",") if item.strip()]
         return v
