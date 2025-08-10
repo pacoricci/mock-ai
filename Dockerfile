@@ -10,7 +10,6 @@ RUN apt-get update \
 COPY pyproject.toml README.md /app/
 COPY mock_ai /app/mock_ai
 
-RUN apt install -y ffmpeg
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir .
 
