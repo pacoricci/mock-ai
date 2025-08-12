@@ -87,12 +87,12 @@ async def chat_completions(
         )
     model_settings = data.to_settings()
     if data.stream:
-        stream_response = model.get_response(model_settings, True)
+        stream_response = await model.get_response(model_settings, True)
         return StreamingResponse(
             SSEEncoder(stream_response), media_type="text/event-stream"
         )
     else:
-        model_response = model.get_response(model_settings, False)
+        model_response = await model.get_response(model_settings, False)
         return Response(
             content=model_response.model_dump_json(),
             media_type="application/json",
@@ -113,7 +113,7 @@ async def embeddings(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Model `{data.model}` is not an embedding model",
         )
-    model_response = model.get_response(data)
+    model_response = await model.get_response(data)
     return model_response
 
 
@@ -132,12 +132,12 @@ async def images_generations(
             detail=f"Model `{data.model}` is not an image generation model",
         )
     if data.response_format == "url":
-        model_response_urls = model.get_response(data, "url")
+        model_response_urls = await model.get_response(data, "url")
         for image in model_response_urls.data:
             image.url = str(request.base_url) + image.url
         return model_response_urls
     elif data.response_format == "b64_json":
-        model_response_b64 = model.get_response(data, "b64_json")
+        model_response_b64 = await model.get_response(data, "b64_json")
         return model_response_b64
 
 
@@ -174,7 +174,7 @@ async def speech_generation(data: SpeechRequest) -> Response:
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Model `{data.model}` is not a text to speech model",
         )
-    audio_data = model.get_response(data)
+    audio_data = await model.get_response(data)
     return Response(
         content=audio_data,
         media_type=f"audio/{data.response_format}",

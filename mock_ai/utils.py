@@ -5,7 +5,7 @@ import random
 import re
 import string
 import uuid
-from collections.abc import Iterator
+from collections.abc import AsyncIterator
 
 import numpy as np
 from PIL import Image
@@ -14,15 +14,18 @@ from pydantic import BaseModel
 
 class SSEEncoder:
     def __init__(
-        self, iterator: Iterator[BaseModel] | Iterator[dict] | Iterator[str]
+        self,
+        iterator: AsyncIterator[BaseModel]
+        | AsyncIterator[dict]
+        | AsyncIterator[str],
     ) -> None:
         self.iterator = iterator
 
-    def __iter__(self):
+    def __aiter__(self):
         return self
 
-    def __next__(self) -> bytes:
-        item = next(self.iterator)
+    async def __anext__(self) -> bytes:
+        item = await anext(self.iterator)
         if isinstance(item, str):
             return f"data: {item}\n\n".encode()
         if isinstance(item, dict):

@@ -1,3 +1,4 @@
+import asyncio
 import io
 import wave
 
@@ -8,12 +9,13 @@ from mock_ai.models.standard_speech import StandardSpeechModel
 from mock_ai.schemas.speech_request import SpeechRequest
 
 
-def test_standard_speech_model():
+@pytest.mark.asyncio
+async def test_standard_speech_model():
     model = StandardSpeechModel(key="tts-1")
     request = SpeechRequest(
         model="tts-1", input="test", voice="alloy", response_format="wav"
     )
-    result = model.get_response(request)
+    result = await model.get_response(request)
 
     assert isinstance(result, bytes)
     assert len(result) > 0
@@ -25,12 +27,13 @@ def test_standard_speech_model():
             assert wav_file.getframerate() == 24000
 
 
-def test_standard_speech_model_flac():
+@pytest.mark.asyncio
+async def test_standard_speech_model_flac():
     model = StandardSpeechModel(key="tts-1")
     request = SpeechRequest(
         model="tts-1", input="test", voice="alloy", response_format="flac"
     )
-    result = model.get_response(request)
+    result = await model.get_response(request)
 
     assert isinstance(result, bytes)
     assert len(result) > 0

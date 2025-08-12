@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 import mock_ai.models.standard_image as sim
@@ -6,12 +8,13 @@ from mock_ai.schemas.image_request import ImageRequest
 from mock_ai.utils import check_image_id, parse_dimensions
 
 
-def test_standard_image_url():
+@pytest.mark.asyncio
+async def test_standard_image_url():
     model = StandardImageModel("test")
     req = ImageRequest(
         prompt="foo", model="bar", n=2, size="32x32", output_format="jpeg"
     )
-    resp = model.get_response(req, "url")
+    resp = await model.get_response(req, "url")
     assert len(resp.data) == 2
     for item in resp.data:
         assert item.url.startswith("private/images/")
@@ -20,7 +23,8 @@ def test_standard_image_url():
         assert check_image_id(image_id)
 
 
-def test_standard_image_b64(monkeypatch):
+@pytest.mark.asyncio
+async def test_standard_image_b64(monkeypatch):
     width, height = parse_dimensions("64x48")
     model = StandardImageModel("test")
     req = ImageRequest(
@@ -42,7 +46,7 @@ def test_standard_image_b64(monkeypatch):
     monkeypatch.setattr(sim, "generate_noise_image_from_string", fake_noise)
     monkeypatch.setattr(sim, "img_to_b64", fake_b64)
 
-    resp = model.get_response(req, "b64_json")
+    resp = await model.get_response(req, "b64_json")
     assert len(resp.data) == 3
     for i, item in enumerate(resp.data):
         expected_img = (
@@ -51,8 +55,9 @@ def test_standard_image_b64(monkeypatch):
         assert item.b64_json == expected_img
 
 
-def test_standard_image_invalid_format():
+@pytest.mark.asyncio
+async def test_standard_image_invalid_format():
     model = StandardImageModel("test")
     req = ImageRequest(prompt="foo", model="bar")
     with pytest.raises(ValueError):
-        model.get_response(req, "invalid")
+        await model.get_response(req, "invalid")

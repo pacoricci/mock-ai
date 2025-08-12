@@ -1,5 +1,5 @@
 import abc
-from collections.abc import Iterator
+from collections.abc import AsyncIterator
 from typing import Literal, overload
 
 from mock_ai.schemas import ModelSettings
@@ -16,7 +16,7 @@ class ChatModel(BaseAIModel):
     """Base interface for calling a language model."""
 
     @overload
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[False],
@@ -24,17 +24,20 @@ class ChatModel(BaseAIModel):
         """Get the full chat completion response."""
 
     @overload
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[True],
-    ) -> Iterator[ChatCompletionResponse[DeltaChoice]]:
+    ) -> AsyncIterator[ChatCompletionResponse[DeltaChoice]]:
         """Stream chat completion deltas."""
 
     @abc.abstractmethod
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: bool,
-    ) -> ChatCompletionResponse | Iterator[ChatCompletionResponse[DeltaChoice]]:
+    ) -> (
+        ChatCompletionResponse
+        | AsyncIterator[ChatCompletionResponse[DeltaChoice]]
+    ):
         """Fetch chat completions, optionally streaming."""

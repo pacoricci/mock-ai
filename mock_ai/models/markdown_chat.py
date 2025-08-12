@@ -1,5 +1,5 @@
-import time
-from collections.abc import Generator, Iterator
+import asyncio
+from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any, Literal, overload
 
 from mock_ai.schemas.chat_completion_request import ModelSettings
@@ -131,31 +131,34 @@ class MarkdownChatModel(ChatModel):
         return "markdown-chat-model"
 
     @overload
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[False],
     ) -> ChatCompletionResponse[MessageChoice]: ...
 
     @overload
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[True],
-    ) -> Iterator[ChatCompletionResponse[DeltaChoice]]: ...
+    ) -> AsyncIterator[ChatCompletionResponse[DeltaChoice]]: ...
 
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: bool,
-    ) -> ChatCompletionResponse | Iterator[ChatCompletionResponse[DeltaChoice]]:
+    ) -> (
+        ChatCompletionResponse
+        | AsyncIterator[ChatCompletionResponse[DeltaChoice]]
+    ):
         if stream:
 
-            def stream_response() -> Generator[
-                ChatCompletionResponse[DeltaChoice], Any, None
+            async def stream_response() -> AsyncGenerator[
+                ChatCompletionResponse[DeltaChoice]
             ]:
                 for i in range(0, len(MD_TEXT), 10):
-                    time.sleep(0.2)
+                    await asyncio.sleep(0.2)
 
                     yield ChatCompletionResponse(
                         model=self.key,

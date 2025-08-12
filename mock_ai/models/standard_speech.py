@@ -21,7 +21,7 @@ class StandardSpeechModel(SpeechModel):
     def key(self) -> str:
         return self._key
 
-    def get_response(self, data: SpeechRequest) -> bytes:
+    async def get_response(self, data: SpeechRequest) -> bytes:
         duration = 10
         t = np.linspace(0, duration, self.sample_rate * duration, False)
         sine = (self.amplitude * np.sin(2 * np.pi * 200 * t)).astype(np.float32)

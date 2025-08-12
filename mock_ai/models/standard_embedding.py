@@ -21,7 +21,7 @@ class StandardEmbeddingModel(EmbeddingModel):
     def key(self) -> str:
         return self._key
 
-    def get_response(self, data: EmbeddingRequest) -> EmbeddingResponse:
+    async def get_response(self, data: EmbeddingRequest) -> EmbeddingResponse:
         m = data.dimensions if data.dimensions else self.dimensions
         batch = data.input if isinstance(data.input, list) else [data.input]
         embedding_object_list = [
