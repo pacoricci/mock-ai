@@ -1,3 +1,4 @@
+import asyncio
 from typing import Literal
 
 from mock_ai.schemas.image_request import ImageRequest
@@ -20,8 +21,9 @@ from .image_model import ImageModel
 class StandardImageModel(ImageModel):
     """Standard image model."""
 
-    def __init__(self, key: str):
+    def __init__(self, key: str, response_deley: float | None = None):
         self._key = key
+        self.response_deley = response_deley
 
     @property
     def key(self) -> str:
@@ -30,6 +32,8 @@ class StandardImageModel(ImageModel):
     async def get_response(
         self, data: ImageRequest, response_format: Literal["url", "b64_json"]
     ) -> ImageResponse:
+        if self.response_deley:
+            await asyncio.sleep(self.response_deley)
         if response_format == "url":
             image_urls = []
             for _ in range(data.n):
