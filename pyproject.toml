@@ -14,6 +14,7 @@ dependencies = [
     "pillow==11.2.1",
     "pydantic-settings==2.9.1",
     "pydantic[mypy]==2.11.3",
+    "pytest-asyncio>=1.1.0",
     "rich==13.9.4",
     "soundfile==0.12.1",
     "typer==0.15.2",

@@ -1,8 +1,8 @@
+import asyncio
 import json
 import random
 import string
-import time
-from collections.abc import Generator, Iterator
+from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any, Literal, overload
 
 from mock_ai.schemas.chat_completion_request import ModelSettings
@@ -64,24 +64,27 @@ class StandardChatModel(ChatModel):
         return self._key
 
     @overload
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[False],
     ) -> ChatCompletionResponse[MessageChoice]: ...
 
     @overload
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[True],
-    ) -> Iterator[ChatCompletionResponse[DeltaChoice]]: ...
+    ) -> AsyncIterator[ChatCompletionResponse[DeltaChoice]]: ...
 
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: bool,
-    ) -> ChatCompletionResponse | Iterator[ChatCompletionResponse[DeltaChoice]]:
+    ) -> (
+        ChatCompletionResponse
+        | AsyncIterator[ChatCompletionResponse[DeltaChoice]]
+    ):
         max_completion_tokens = int(
             min(
                 self.completions_tokens_limit,
@@ -99,11 +102,11 @@ class StandardChatModel(ChatModel):
 
             if stream:
 
-                def stream_response() -> Generator[
-                    ChatCompletionResponse[DeltaChoice], Any, None
+                async def stream_response() -> AsyncGenerator[
+                    ChatCompletionResponse[DeltaChoice]
                 ]:
                     for i in range(0, len(content), 10):
-                        time.sleep(1 / self.batch_per_second)
+                        await asyncio.sleep(1 / self.batch_per_second)
                         yield ChatCompletionResponse(
                             model=self.key,
                             choices=[
@@ -142,15 +145,15 @@ class StandardChatModel(ChatModel):
 
         if stream:
 
-            def stream_response() -> Generator[
-                ChatCompletionResponse[DeltaChoice], Any, None
+            async def stream_response() -> AsyncGenerator[
+                ChatCompletionResponse[DeltaChoice]
             ]:
                 tokens_bank = max_completion_tokens
                 while tokens_bank > 0:
                     batch_size = min(self.token_per_batch, tokens_bank)
                     tokens_bank -= batch_size
 
-                    time.sleep(1 / self.batch_per_second)
+                    await asyncio.sleep(1 / self.batch_per_second)
 
                     yield ChatCompletionResponse(
                         model=self.key,

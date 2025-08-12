@@ -7,7 +7,7 @@ from .base_ai_model import BaseAIModel
 
 class SpeechModel(BaseAIModel):
     @abc.abstractmethod
-    def get_response(
+    async def get_response(
         self,
         data: SpeechRequest,
     ) -> bytes: ...

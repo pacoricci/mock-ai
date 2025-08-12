@@ -8,7 +8,7 @@ from .base_ai_model import BaseAIModel
 
 class EmbeddingModel(BaseAIModel):
     @abc.abstractmethod
-    def get_response(
+    async def get_response(
         self,
         embedding_request: EmbeddingRequest,
     ) -> EmbeddingResponse:

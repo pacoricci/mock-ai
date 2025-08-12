@@ -19,24 +19,48 @@ class DummyModel(BaseModel):
     foo: str
 
 
-def test_sse_encoder_strings():
+@pytest.mark.asyncio
+async def test_sse_encoder_strings():
+    async def gen():
+        values = ["first", "second", "third"]
+        for v in values:
+            yield v
+
+    encoder = SSEEncoder(gen())
+    results = []
+    async for item in encoder:
+        results.append(item)
     values = ["first", "second", "third"]
-    encoder = SSEEncoder(iter(values))
-    results = [next(encoder) for _ in values]
     assert results == [f"data: {v}\n\n".encode() for v in values]
 
 
-def test_sse_encoder_dicts():
+@pytest.mark.asyncio
+async def test_sse_encoder_dicts():
+    async def gen():
+        values = [{"a": 1}, {"b": 2}]
+        for v in values:
+            yield v
+
+    encoder = SSEEncoder(gen())
+    results = []
+    async for item in encoder:
+        results.append(item)
     values = [{"a": 1}, {"b": 2}]
-    encoder = SSEEncoder(iter(values))
-    results = [next(encoder) for _ in values]
     assert results == [f"data: {v}\n\n".encode() for v in values]
 
 
-def test_sse_encoder_models():
+@pytest.mark.asyncio
+async def test_sse_encoder_models():
+    async def gen():
+        values = [DummyModel(foo="bar"), DummyModel(foo="baz")]
+        for v in values:
+            yield v
+
+    encoder = SSEEncoder(gen())
+    results = []
+    async for item in encoder:
+        results.append(item)
     values = [DummyModel(foo="bar"), DummyModel(foo="baz")]
-    encoder = SSEEncoder(iter(values))
-    results = [next(encoder) for _ in values]
     expected = [
         f"data: {item.model_dump_json()}\n\n".encode() for item in values
     ]

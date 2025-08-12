@@ -1,8 +1,8 @@
+import asyncio
 import json
 import random
 import string
-import time
-from collections.abc import Generator, Iterator
+from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any, Literal, overload
 
 from mock_ai.schemas.chat_completion_request import ModelSettings
@@ -52,24 +52,27 @@ class StructuredChatModel(ChatModel):
         return self._key
 
     @overload
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[False],
     ) -> ChatCompletionResponse[MessageChoice]: ...
 
     @overload
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: Literal[True],
-    ) -> Iterator[ChatCompletionResponse[DeltaChoice]]: ...
+    ) -> AsyncIterator[ChatCompletionResponse[DeltaChoice]]: ...
 
-    def get_response(
+    async def get_response(
         self,
         model_settings: ModelSettings,
         stream: bool,
-    ) -> ChatCompletionResponse | Iterator[ChatCompletionResponse[DeltaChoice]]:
+    ) -> (
+        ChatCompletionResponse
+        | AsyncIterator[ChatCompletionResponse[DeltaChoice]]
+    ):
         fmt = model_settings.response_format or {}
         if fmt.get("type") == "json_schema":
             payload = _from_schema(fmt.get("json_schema", {}))
@@ -80,11 +83,11 @@ class StructuredChatModel(ChatModel):
 
         if stream:
 
-            def stream_response() -> Generator[
-                ChatCompletionResponse[DeltaChoice], Any, None
+            async def stream_response() -> AsyncGenerator[
+                ChatCompletionResponse[DeltaChoice]
             ]:
                 for i in range(0, len(content), 10):
-                    time.sleep(0.01)
+                    await asyncio.sleep(0.01)
                     yield ChatCompletionResponse(
                         model=self.key,
                         choices=[

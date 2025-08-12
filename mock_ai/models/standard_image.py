@@ -27,7 +27,7 @@ class StandardImageModel(ImageModel):
     def key(self) -> str:
         return self._key
 
-    def get_response(
+    async def get_response(
         self, data: ImageRequest, response_format: Literal["url", "b64_json"]
     ) -> ImageResponse:
         if response_format == "url":
