@@ -25,7 +25,7 @@ For example to serve locally for development:
 mock-ai dev --port 8000
 ```
 
-By default the API will be available at [http://127.0.0.1:5001](http://127.0.0.1:5001) (or the host and port you choose) and the OpenAPI docs can be viewed at `/docs`.
+By default the API will be available at [http://127.0.0.1:5001](http://127.0.0.1:5001) (or the host and port you choose). The OpenAPI docs for the REST API are served at `/docs`.
 
 ## Usage
 
@@ -38,6 +38,16 @@ Once running, the service exposes endpoints under `/v1` that mirror typical AI A
 - `GET /v1/models` to list registered models
 
 Each endpoint returns deterministic content suitable for automated tests or demos without an actual model backend.
+
+## MCP (Streamable HTTP)
+
+The service also exposes an MCP server using Streamable HTTP for tool calls.
+
+- Endpoint: `POST http://127.0.0.1:5001/mcp-servers/foo/mcp/`
+- Mode: stateless requests (no session persistence required)
+- Client: use an MCP client that supports the Streamable HTTP transport
+
+Note: The MCP transport is not part of the REST OpenAPI schema and won’t appear in `/docs`.
 
 ## Authentication
 
@@ -69,4 +79,3 @@ For example to only allow requests from `http://localhost:3000`:
 ```bash
 export CORS_ALLOW_ORIGINS=http://localhost:3000
 ```
-

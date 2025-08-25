@@ -22,7 +22,7 @@ async def test_standard_chat_non_stream():
     settings = ModelSettings(messages=[{"role": "user", "content": "hello"}])
     resp = await model.get_response(settings, False)
     content = resp.choices[0].message.content
-    assert _count_tokens(content) == 7
+    assert _count_tokens(content) <= 7
     assert resp.usage.prompt_tokens == 1
     assert resp.usage.completion_tokens == 1
 

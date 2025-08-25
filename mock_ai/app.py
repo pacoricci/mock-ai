@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from mock_ai.mcp_app import mcp
 from mock_ai.models import ChatModel, EmbeddingModel, ImageModel, SpeechModel
 from mock_ai.models.standard_registry import STANDARD_REGISTRY
 from mock_ai.schemas.chat_completion_request import ChatCompletionRequest
@@ -53,15 +54,15 @@ def create_app() -> FastAPI:
     return app
 
 
-app = create_app()
+api_app = create_app()
 
 
-@app.get("/v1/models/", response_model=ModelsResponse)
+@api_app.get("/v1/models/", response_model=ModelsResponse)
 async def models() -> ModelsResponse:
     return STANDARD_REGISTRY.get_models()
 
 
-@app.get("/v1/models/{model_name}")
+@api_app.get("/v1/models/{model_name}")
 async def model(model_name: str) -> ModelInfo:
     model = STANDARD_REGISTRY.get(model_name)
     if model is None:
@@ -71,7 +72,7 @@ async def model(model_name: str) -> ModelInfo:
     return model.model_info
 
 
-@app.post("/v1/chat/completions")
+@api_app.post("/v1/chat/completions")
 async def chat_completions(
     data: ChatCompletionRequest,
 ) -> Response:
@@ -99,7 +100,7 @@ async def chat_completions(
         )
 
 
-@app.post("/v1/embeddings")
+@api_app.post("/v1/embeddings")
 async def embeddings(
     data: EmbeddingRequest,
 ) -> EmbeddingResponse:
@@ -117,7 +118,7 @@ async def embeddings(
     return model_response
 
 
-@app.post("/v1/images/generations")
+@api_app.post("/v1/images/generations")
 async def images_generations(
     data: ImageRequest, request: Request
 ) -> ImageResponse[ImageUrl] | ImageResponse[ImageB64]:
@@ -141,7 +142,7 @@ async def images_generations(
         return model_response_b64
 
 
-@app.get("/private/images/{id_}.{ext}")
+@api_app.get("/private/images/{id_}.{ext}")
 async def private(id_: str, ext: str) -> Response:
     data = get_data_from_image_id(id_)
     if data is None:
@@ -162,7 +163,7 @@ async def private(id_: str, ext: str) -> Response:
     return Response(content=img_data, media_type=f"image/{format_.lower()}")
 
 
-@app.post("/v1/audio/speech")
+@api_app.post("/v1/audio/speech")
 async def speech_generation(data: SpeechRequest) -> Response:
     model = STANDARD_REGISTRY.get(data.model)
     if model is None:
@@ -183,3 +184,29 @@ async def speech_generation(data: SpeechRequest) -> Response:
             "Accept-Ranges": "bytes",
         },
     )
+
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+from starlette.applications import Starlette
+from starlette.routing import Mount
+
+
+@asynccontextmanager
+async def lifespan(app: Starlette) -> AsyncIterator[None]:
+    # Ensure the MCP session manager runs so StreamableHTTP has a task group
+    # streamable_http_app() is called below which lazily creates the manager
+    async with mcp.session_manager.run():
+        yield
+
+
+app = Starlette(
+    routes=[
+        # Expose the MCP Streamable HTTP server
+        Mount("/mcp-servers/foo", app=mcp.streamable_http_app()),
+        # Expose the REST API at the root path
+        Mount("/", app=api_app),
+    ],
+    lifespan=lifespan,
+)
