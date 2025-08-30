@@ -23,7 +23,6 @@ from mock_ai.utils import (
     parse_dimensions,
 )
 
-
 security = HTTPBearer(auto_error=False)
 
 
@@ -196,19 +195,19 @@ from starlette.routing import Mount
 
 @asynccontextmanager
 async def lifespan(app: Starlette) -> AsyncIterator[None]:
-    # Ensure the MCP session manager runs so StreamableHTTP has a task group
-    # streamable_http_app() is called below which lazily creates the manager
-    mcp_steteful_ctx_manager = mcp_steteful.session_manager.run()
-    yield
-    mcp_steteful_ctx_manager
+    async with (
+        mcp_steteful.session_manager.run(),
+        mcp_stateless.session_manager.run(),
+    ):
+        yield
 
 
 app = Starlette(
     routes=[
         Mount(
-            "/mcp-servers/steteless", app=mcp_stateless.streamable_http_app()
+            "/mcp-servers/stateless", app=mcp_stateless.streamable_http_app()
         ),
-        Mount("/mcp-servers/steteful", app=mcp_steteful.streamable_http_app()),
+        Mount("/mcp-servers/stateful", app=mcp_steteful.streamable_http_app()),
         # Expose the REST API at the root path
         Mount("/", app=api_app),
     ],

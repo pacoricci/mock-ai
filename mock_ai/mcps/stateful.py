@@ -1,5 +1,5 @@
-from mcp.server.fastmcp import FastMCP, Context
 import anyio
+from mcp.server.fastmcp import Context, FastMCP
 
 mcp_steteful = FastMCP("mcp")
 
@@ -12,8 +12,8 @@ async def start_notification_stream(
 
     for i in range(count):
         notification_msg = f"[{i + 1}/{count}] Event from '{caller}'"
-        ctx.info(notification_msg)
+        await ctx.info(notification_msg)
 
         if i < count - 1:
-            anyio.sleep(interval)
+            await anyio.sleep(interval)
     return f"Sent {count} notifications with {interval}s interval for caller: {caller}"
