@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from mock_ai.mcp_app import mcp
+from mock_ai.mcps import mcp_stateless, mcp_steteful
 from mock_ai.models import ChatModel, EmbeddingModel, ImageModel, SpeechModel
 from mock_ai.models.standard_registry import STANDARD_REGISTRY
 from mock_ai.schemas.chat_completion_request import ChatCompletionRequest
@@ -195,16 +195,19 @@ from starlette.routing import Mount
 
 @asynccontextmanager
 async def lifespan(app: Starlette) -> AsyncIterator[None]:
-    # Ensure the MCP session manager runs so StreamableHTTP has a task group
-    # streamable_http_app() is called below which lazily creates the manager
-    async with mcp.session_manager.run():
+    async with (
+        mcp_steteful.session_manager.run(),
+        mcp_stateless.session_manager.run(),
+    ):
         yield
 
 
 app = Starlette(
     routes=[
-        # Expose the MCP Streamable HTTP server
-        Mount("/mcp-servers/foo", app=mcp.streamable_http_app()),
+        Mount(
+            "/mcp-servers/stateless", app=mcp_stateless.streamable_http_app()
+        ),
+        Mount("/mcp-servers/stateful", app=mcp_steteful.streamable_http_app()),
         # Expose the REST API at the root path
         Mount("/", app=api_app),
     ],

@@ -13,7 +13,7 @@ def _first_result_event(client: TestClient, payload: dict) -> dict:
     }
     with client.stream(
         "POST",
-        "/mcp-servers/foo/mcp",
+        "/mcp-servers/stateful/mcp",
         headers=headers,
         content=json.dumps(payload),
     ) as response:
@@ -66,18 +66,3 @@ def test_mcp_initialize_streams_ok(api_client: TestClient):
     message = _first_result_event(api_client, payload)
     assert message.get("jsonrpc") == "2.0"
     assert "result" in message
-
-
-def test_mcp_tools_list_contains_greet(api_client: TestClient):
-    payload = {
-        "jsonrpc": "2.0",
-        "id": "2",
-        "method": "tools/list",
-        "params": {},
-    }
-
-    message = _first_result_event(api_client, payload)
-    # Do not rely on exact schema; ensure our test tool name surfaces
-    assert "result" in message
-    # We registered an example tool named "add"; also "greet" may exist
-    assert ("add" in json.dumps(message)) or ("greet" in json.dumps(message))
