@@ -41,13 +41,21 @@ Each endpoint returns deterministic content suitable for automated tests or demo
 
 ## MCP (Streamable HTTP)
 
-The service also exposes an MCP server using Streamable HTTP for tool calls.
+The service exposes two MCP servers over Streamable HTTP. Use an MCP client that supports the Streamable HTTP transport.
 
-- Endpoint: `POST http://127.0.0.1:5001/mcp-servers/foo/mcp/`
-- Mode: stateless requests (no session persistence required)
-- Client: use an MCP client that supports the Streamable HTTP transport
+- Stateless server: `POST http://127.0.0.1:5001/mcp-servers/stateless/mcp`
+  - Purpose: simple tools/resources/prompts; no session state required
+  - Tools: `add(a:int, b:int)` returns the sum
+  - Resources: `greeting://{name}` returns a greeting string
+  - Prompts: `greet_user(name, style="friendly"|"formal"|"casual")`
 
-Note: The MCP transport is not part of the REST OpenAPI schema and won’t appear in `/docs`.
+- Stateful server: `POST http://127.0.0.1:5001/mcp-servers/stateful/mcp`
+  - Purpose: sessionful interactions and streaming notifications
+  - Tools: `start_notification_stream(interval:int, count:int, caller:str)` emits `info` notifications during the session and returns a summary string
+
+Notes:
+- These MCP endpoints stream Server-Sent Events and are not part of the REST OpenAPI docs at `/docs`.
+- Authentication in this project applies to the REST API; the MCP mounts are separate and not included in the REST OpenAPI schema.
 
 ## Authentication
 
