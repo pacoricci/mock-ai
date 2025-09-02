@@ -4,7 +4,7 @@ import re
 
 import pytest
 
-from mock_ai.models.standard_chat import StandardChatModel
+from mock_ai.models.chat.standard_chat import StandardChatModel
 from mock_ai.schemas.chat_completion_request import ModelSettings
 
 
@@ -35,7 +35,7 @@ async def test_standard_chat_stream(monkeypatch):
         stream_options={"include_usage": True},
     )
     monkeypatch.setattr(
-        "mock_ai.models.standard_chat.asyncio.sleep", async_noop
+        "mock_ai.models.chat.standard_chat.asyncio.sleep", async_noop
     )
     chunks = []
     async for chunk in await model.get_response(settings, True):
@@ -79,7 +79,7 @@ async def test_standard_chat_json_schema_stream(monkeypatch):
         stream_options={"include_usage": True},
     )
     monkeypatch.setattr(
-        "mock_ai.models.standard_chat.asyncio.sleep", async_noop
+        "mock_ai.models.chat.standard_chat.asyncio.sleep", async_noop
     )
     chunks = []
     async for chunk in await model.get_response(settings, True):

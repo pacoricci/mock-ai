@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from mock_ai.models.structured_chat import StructuredChatModel
+from mock_ai.models.chat.structured_chat import StructuredChatModel
 from mock_ai.schemas.chat_completion_request import ModelSettings
 
 
@@ -26,7 +26,7 @@ async def async_noop(*args, **kwargs):
 @pytest.mark.asyncio
 async def test_structured_chat_json_schema_stream(monkeypatch):
     monkeypatch.setattr(
-        "mock_ai.models.structured_chat.asyncio.sleep", async_noop
+        "mock_ai.models.chat.structured_chat.asyncio.sleep", async_noop
     )
     model = StructuredChatModel()
     schema = {

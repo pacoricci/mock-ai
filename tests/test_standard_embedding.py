@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from mock_ai.models.standard_embedding import StandardEmbeddingModel
+from mock_ai.models.embedding.standard_embedding import StandardEmbeddingModel
 from mock_ai.schemas.embedding_request import EmbeddingRequest
 
 

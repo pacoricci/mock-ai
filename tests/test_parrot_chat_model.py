@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from mock_ai.models.parrot_chat import ParrotChatModel
+from mock_ai.models.chat.parrot_chat import ParrotChatModel
 from mock_ai.schemas.chat_completion_request import ModelSettings
 
 
