@@ -4,6 +4,7 @@ from .parrot_chat import ParrotChatModel
 from .standard_chat import StandardChatModel
 from .standard_embedding import StandardEmbeddingModel
 from .standard_image import StandardImageModel
+from .standard_orc_model import StandardOcrModel
 from .standard_speech import StandardSpeechModel
 from .structured_chat import StructuredChatModel
 
@@ -19,3 +20,4 @@ STANDARD_REGISTRY.register(StandardSpeechModel("mock-speech-model"))
 STANDARD_REGISTRY.register(MarkdownChatModel())
 STANDARD_REGISTRY.register(ParrotChatModel())
 STANDARD_REGISTRY.register(StructuredChatModel())
+STANDARD_REGISTRY.register(StandardOcrModel("mock-ocr"))

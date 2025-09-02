@@ -6,7 +6,13 @@ from fastapi.responses import Response, StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from mock_ai.mcps import mcp_stateless, mcp_steteful
-from mock_ai.models import ChatModel, EmbeddingModel, ImageModel, SpeechModel
+from mock_ai.models import (
+    ChatModel,
+    EmbeddingModel,
+    ImageModel,
+    OcrModel,
+    SpeechModel,
+)
 from mock_ai.models.standard_registry import STANDARD_REGISTRY
 from mock_ai.schemas.chat_completion_request import ChatCompletionRequest
 from mock_ai.schemas.embedding_request import EmbeddingRequest
@@ -14,6 +20,8 @@ from mock_ai.schemas.embedding_response import EmbeddingResponse
 from mock_ai.schemas.image_request import ImageRequest
 from mock_ai.schemas.image_response import ImageB64, ImageResponse, ImageUrl
 from mock_ai.schemas.models_response import ModelInfo, ModelsResponse
+from mock_ai.schemas.ocr_request import OcrRequest
+from mock_ai.schemas.ocr_response import Document
 from mock_ai.schemas.speech_request import SpeechRequest
 from mock_ai.settings import auth_settings, cors_settings
 from mock_ai.utils import (
@@ -184,6 +192,22 @@ async def speech_generation(data: SpeechRequest) -> Response:
             "Accept-Ranges": "bytes",
         },
     )
+
+
+@api_app.post("/v1/ocr")
+async def ocr(data: OcrRequest) -> Document:
+    model = STANDARD_REGISTRY.get(data.model)
+    if model is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Model not found"
+        )
+    if not isinstance(model, OcrModel):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Model `{data.model}` is not a ocr model",
+        )
+    document = await model.get_response(data)
+    return document
 
 
 from collections.abc import AsyncIterator
