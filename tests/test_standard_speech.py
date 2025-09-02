@@ -5,7 +5,7 @@ import wave
 import pytest
 import soundfile as sf
 
-from mock_ai.models.standard_speech import StandardSpeechModel
+from mock_ai.models.speech.standard_speech import StandardSpeechModel
 from mock_ai.schemas.speech_request import SpeechRequest
 
 

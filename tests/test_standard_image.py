@@ -2,8 +2,8 @@ import asyncio
 
 import pytest
 
-import mock_ai.models.standard_image as sim
-from mock_ai.models.standard_image import StandardImageModel
+import mock_ai.models.text_to_image.standard_image as sim
+from mock_ai.models.text_to_image.standard_image import StandardImageModel
 from mock_ai.schemas.image_request import ImageRequest
 from mock_ai.utils import check_image_id, parse_dimensions
 

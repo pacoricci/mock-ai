@@ -4,7 +4,7 @@ from typing import Literal, overload
 from mock_ai.schemas.ocr_request import OcrRequest
 from mock_ai.schemas.ocr_response import Document
 
-from .base_ai_model import BaseAIModel
+from ..base_ai_model import BaseAIModel
 
 
 class OcrModel(BaseAIModel):

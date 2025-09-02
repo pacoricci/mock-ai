@@ -9,7 +9,7 @@ from mock_ai.schemas.completion_response import (
     MessageChoice,
 )
 
-from .base_ai_model import BaseAIModel
+from ..base_ai_model import BaseAIModel
 
 
 class ChatModel(BaseAIModel):
