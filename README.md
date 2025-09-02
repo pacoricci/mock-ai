@@ -35,6 +35,7 @@ Once running, the service exposes endpoints under `/v1` that mirror typical AI A
 - `POST /v1/embeddings` for embeddings
 - `POST /v1/images/generations` for test images
 - `POST /v1/audio/speech` for text-to-speech
+- `POST /v1/ocr` for OCR extraction
 - `GET /v1/models` to list registered models
 
 Each endpoint returns deterministic content suitable for automated tests or demos without an actual model backend.
