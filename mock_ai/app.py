@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from mock_ai.exceptions import FileNotFound, ModelNotFound, ModelTypeError
 from mock_ai.mcps import mcp_stateless, mcp_steteful
 from mock_ai.models import (
     ChatModel,
@@ -74,9 +75,7 @@ async def models() -> ModelsResponse:
 async def model(model_name: str) -> ModelInfo:
     model = STANDARD_REGISTRY.get(model_name)
     if model is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Model not found"
-        )
+        raise ModelNotFound(model_name)
     return model.model_info
 
 
@@ -86,14 +85,9 @@ async def chat_completions(
 ) -> Response:
     model = STANDARD_REGISTRY.get(data.model)
     if model is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Model not found"
-        )
+        raise ModelNotFound(data.model)
     if not isinstance(model, ChatModel):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Model `{data.model}` is not a chat model",
-        )
+        raise ModelTypeError(data.model, "chat")
     model_settings = data.to_settings()
     if data.stream:
         stream_response = await model.get_response(model_settings, True)
@@ -114,14 +108,9 @@ async def embeddings(
 ) -> EmbeddingResponse:
     model = STANDARD_REGISTRY.get(data.model)
     if model is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Model not found"
-        )
+        raise ModelNotFound(data.model)
     if not isinstance(model, EmbeddingModel):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Model `{data.model}` is not an embedding model",
-        )
+        raise ModelTypeError(data.model, "embedding")
     model_response = await model.get_response(data)
     return model_response
 
@@ -132,14 +121,9 @@ async def images_generations(
 ) -> ImageResponse[ImageUrl] | ImageResponse[ImageB64]:
     model = STANDARD_REGISTRY.get(data.model)
     if model is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Model not found"
-        )
+        raise ModelNotFound(data.model)
     if not isinstance(model, ImageModel):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Model `{data.model}` is not an image generation model",
-        )
+        raise ModelTypeError(data.model, "image generation")
     if data.response_format == "url":
         model_response_urls = await model.get_response(data, "url")
         for image in model_response_urls.data:
@@ -154,15 +138,11 @@ async def images_generations(
 async def private(id_: str, ext: str) -> Response:
     data = get_data_from_image_id(id_)
     if data is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
-        )
+        raise FileNotFound()
     try:
         size, format_ = data.split("|")
     except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
-        )
+        raise FileNotFound()
     width, height = parse_dimensions(size)
     img = generate_noise_image_from_string(id_, width, height)
     buffer = io.BytesIO()
@@ -175,14 +155,9 @@ async def private(id_: str, ext: str) -> Response:
 async def speech_generation(data: SpeechRequest) -> Response:
     model = STANDARD_REGISTRY.get(data.model)
     if model is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Model not found"
-        )
+        raise ModelNotFound(data.model)
     if not isinstance(model, SpeechModel):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Model `{data.model}` is not a text to speech model",
-        )
+        raise ModelTypeError(data.model, "text to speech")
     audio_data = await model.get_response(data)
     return Response(
         content=audio_data,
@@ -198,14 +173,9 @@ async def speech_generation(data: SpeechRequest) -> Response:
 async def ocr(data: OcrRequest) -> Document:
     model = STANDARD_REGISTRY.get(data.model)
     if model is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Model not found"
-        )
+        raise ModelNotFound(data.model)
     if not isinstance(model, OcrModel):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Model `{data.model}` is not a ocr model",
-        )
+        raise ModelTypeError(data.model, "ocr")
     document = await model.get_response(data)
     return document
 
