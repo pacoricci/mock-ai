@@ -56,11 +56,21 @@ class Page(BaseModel):
         if isinstance(data, dict):
             imgs = data.get("images")
             if isinstance(imgs, list):
-                data["images"] = [
-                    img
-                    for img in imgs
-                    if isinstance(img, dict) and img.get("id") is not None
-                ]
+                filtered: list[Any] = []
+                for img in imgs:
+                    # Keep dict entries only if an id is present
+                    if isinstance(img, dict):
+                        if img.get("id") is not None:
+                            filtered.append(img)
+                        continue
+                    # Keep already-constructed ImageRegion models with a non-empty id
+                    if isinstance(img, ImageRegion):
+                        if getattr(img, "id", None) is not None:
+                            filtered.append(img)
+                        continue
+                    # For any other type, keep it and let field validation decide
+                    filtered.append(img)
+                data["images"] = filtered
         return data
 
 
